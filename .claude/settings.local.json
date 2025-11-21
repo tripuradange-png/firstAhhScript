@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install:*)",
+      "Bash(python:*)",
+      "Bash(timeout 30 python -c \"import requests; import json; resp = requests.post(''https://dashboard.easebuzz.in/transaction/v2/retrieve/date'', headers={''Accept'': ''application/json'', ''Content-Type'': ''application/json''}, json={''key'': ''3POWAUBPC'', ''merchant_email'': ''ashwani@rapidmoney.in'', ''date_range'': {''start_date'': ''15-11-2025'', ''end_date'': ''20-11-2025''}, ''token'': ''YdIAWfcEisvlZTJrJ4N9tjfR2lyIwuCqUFPAxy-b2fM=''}); print(f''Status: {resp.status_code}''); print(resp.text[:500] if resp.status_code == 200 else resp.text)\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
