@@ -173,6 +173,30 @@ try:
             transactions = response_data['data']
 
             if len(transactions) > 0:
+                # Display ALL API Response Data
+                print("=" * 150)
+                print("API RESPONSE - ALL TRANSACTIONS RECEIVED")
+                print("=" * 150)
+
+                api_table_data = []
+                for txn in transactions:
+                    api_table_data.append([
+                        txn.get('txnid', '')[:20],
+                        txn.get('easepayid', '')[:15],
+                        txn.get('status', ''),
+                        f"{float(txn.get('total_debit_amount', 0)):.2f}",
+                        f"{float(txn.get('net_debit_amount', 0)):.2f}",
+                        txn.get('firstname', '')[:20],
+                        txn.get('phone', ''),
+                        txn.get('email', '')[:30]
+                    ])
+
+                headers = ['TxnID', 'EasepayID', 'Status', 'Total Amt', 'Net Amt', 'Name', 'Phone', 'Email']
+                print(tabulate(api_table_data, headers=headers, tablefmt='grid'))
+                print(f"Total from API: {len(transactions)}")
+                print("=" * 150)
+                print()
+
                 print(f"Processing {len(transactions)} transactions...\n")
 
                 # Get existing transaction IDs from database
@@ -182,30 +206,30 @@ try:
                 existing_txnids = set(row[0] for row in existing_txnids_result)
                 print(f"Found {len(existing_txnids)} existing transaction IDs in database\n")
 
-                # Filter out duplicates and prepare new transactions
+                # Filter out duplicates and prepare new/old transactions
                 new_transactions = []
-                duplicate_count = 0
+                old_transactions = []
 
                 for txn in transactions:
                     txnid = txn.get('txnid', '')
                     if txnid not in existing_txnids:
                         new_transactions.append(txn)
                     else:
-                        duplicate_count += 1
+                        old_transactions.append(txn)
 
                 print(f"[INFO] Total from API: {len(transactions)}")
-                print(f"[INFO] Duplicates (already in DB): {duplicate_count}")
+                print(f"[INFO] Duplicates (already in DB): {len(old_transactions)}")
                 print(f"[INFO] New transactions to insert: {len(new_transactions)}\n")
 
-                if len(new_transactions) > 0:
-                    # Display new transactions in table format
+                # Display OLD (Duplicate) Transactions
+                if len(old_transactions) > 0:
                     print("=" * 150)
-                    print("NEW TRANSACTIONS TO BE INSERTED")
+                    print("OLD TRANSACTIONS (ALREADY IN DATABASE - SKIPPED)")
                     print("=" * 150)
 
-                    table_data = []
-                    for txn in new_transactions:
-                        table_data.append([
+                    old_table_data = []
+                    for txn in old_transactions:
+                        old_table_data.append([
                             txn.get('txnid', '')[:20],
                             txn.get('easepayid', '')[:15],
                             txn.get('status', ''),
@@ -216,8 +240,32 @@ try:
                             txn.get('email', '')[:30]
                         ])
 
-                    headers = ['TxnID', 'EasepayID', 'Status', 'Total Amt', 'Net Amt', 'Name', 'Phone', 'Email']
-                    print(tabulate(table_data, headers=headers, tablefmt='grid'))
+                    print(tabulate(old_table_data, headers=headers, tablefmt='grid'))
+                    print(f"Total duplicates skipped: {len(old_transactions)}")
+                    print("=" * 150)
+                    print()
+
+                # Display NEW Transactions
+                if len(new_transactions) > 0:
+                    print("=" * 150)
+                    print("NEW TRANSACTIONS (TO BE INSERTED)")
+                    print("=" * 150)
+
+                    new_table_data = []
+                    for txn in new_transactions:
+                        new_table_data.append([
+                            txn.get('txnid', '')[:20],
+                            txn.get('easepayid', '')[:15],
+                            txn.get('status', ''),
+                            f"{float(txn.get('total_debit_amount', 0)):.2f}",
+                            f"{float(txn.get('net_debit_amount', 0)):.2f}",
+                            txn.get('firstname', '')[:20],
+                            txn.get('phone', ''),
+                            txn.get('email', '')[:30]
+                        ])
+
+                    print(tabulate(new_table_data, headers=headers, tablefmt='grid'))
+                    print(f"Total new transactions: {len(new_transactions)}")
                     print("=" * 150)
                     print()
 
